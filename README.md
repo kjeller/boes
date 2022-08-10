@@ -10,7 +10,7 @@ cd build
 export PICO_SDK_PATH=../..
 
 # Generate make files and build program
-cmake ..
+cmake .. -DPICO_BOARD=pico_w
 make
 
 # Flash pico
