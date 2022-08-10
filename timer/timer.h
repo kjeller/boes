@@ -17,8 +17,8 @@ typedef struct
     unsigned long start_timestamp;
     unsigned long pause_timestamp;
     unsigned long time_diff;
-    char sec_counter[3];
-    char ms_counter[3];
+    char sec_counter[4];
+    char ms_counter[4];
 } Timer;
 
 void start(Timer *self);

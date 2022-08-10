@@ -54,6 +54,9 @@ int main()
     while(true)
     {
         run(&timer);
+
+        // TODO temp code: slow sleep for serial comm
+        sleep_ms(10);
         printf("%s:%s\n", timer.sec_counter, timer.ms_counter);
     }
 

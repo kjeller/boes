@@ -49,6 +49,6 @@ void run(Timer *self)
     }
 
     // Update counter strings
-    sprintf(self->sec_counter, "%3lld", self->time_diff / _1_S_IN_US);
-    sprintf(self->ms_counter, "%3lld", (self->time_diff % _1_S_IN_US) / _1_MS_IN_US);
+    sprintf(self->sec_counter, "%003lld\0", self->time_diff / _1_S_IN_US);
+    sprintf(self->ms_counter, "%003lld\0", (self->time_diff % _1_S_IN_US) / _1_MS_IN_US);
 }
