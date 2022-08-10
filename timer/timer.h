@@ -11,17 +11,17 @@ typedef enum
     Run,
 } State;
 
-typedef struct
-{
-    State state;
-    unsigned long start_timestamp;
-    unsigned long pause_timestamp;
-    unsigned long time_diff;
-    char sec_counter[4];
-    char ms_counter[4];
-} Timer;
-
-void start(Timer *self);
-void stop(Timer *self);
-void reset(Timer *self);
-void run(Timer *self);
+class Timer {
+    public:
+        State state;
+        unsigned long start_timestamp;
+        unsigned long pause_timestamp;
+        unsigned long time_diff;
+        char sec_counter[4];
+        char ms_counter[4];
+        
+        void start();
+        void stop();
+        void reset();
+        void run();
+};

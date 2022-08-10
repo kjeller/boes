@@ -45,15 +45,15 @@ void btn_callback(uint gpio, uint32_t events)
     switch (gpio)
     {
         case GPIO_START:
-            start(&timer);
+            timer.start();
             break;
 
         case GPIO_STOP:
-            stop(&timer);
+            timer.stop();
             break;
 
         case GPIO_RESET:
-            reset(&timer);
+            timer.reset();
             break;
     }
 }
@@ -79,7 +79,7 @@ int main()
 
     while(true)
     {
-        run(&timer);
+        timer.run();
 
         memset(displayDevice->FBBase,0,256);
         displayDevice->SetPixel(displayDevice, 5, 22, 'A', DAT8X10);
