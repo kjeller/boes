@@ -6,7 +6,9 @@ void Timer::start()
 {
     printf("Start triggered\n");
 
-    if (this->state == Pause)
+    // Handles case when going from stop to start when continuing timer.
+    // Time diff is checked to not allow transition reset to start.
+    if (this->state == Pause && this->time_diff != 0)
     {
         this->start_timestamp += time_us_64() - this->pause_timestamp;
     }
@@ -14,15 +16,16 @@ void Timer::start()
     this->state = Run;
 }
 
-void Timer::stop()
+void Timer::reset()
 {
     printf("Reset triggered\n");
 
     this->start_timestamp = time_us_64();
     this->pause_timestamp = 0;
+    this->time_diff = 0;
 }
 
-void Timer::reset()
+void Timer::stop()
 {
     printf("Stop triggered\n");
 
@@ -40,12 +43,12 @@ void Timer::run()
 
         case Pause:
             // Nothing to do in this state
-            return;
+            break;
 
         default:
             // Fixes issue when start time initially is not set
             this->start_timestamp = time_us_64();
-            return;
+            break;
     }
 
     // Update counter strings
