@@ -9,19 +9,22 @@ typedef enum
 {
     Pause,
     Run,
+    Reset,
+    Init,
 } State;
 
 class Timer {
-    public:
-        State state;
-        unsigned long start_timestamp;
-        unsigned long pause_timestamp;
-        unsigned long time_diff;
-        char sec_counter[4];
-        char ms_counter[4];
-        
-        void start();
-        void stop();
-        void reset();
-        void run();
+  public:
+    State state;
+    unsigned long start_timestamp;
+    unsigned long pause_timestamp;
+    unsigned long time_diff;
+    char sec_counter[4] = "000";
+    char ms_counter[4] = "000";
+    
+    Timer();
+    void start();
+    void stop();
+    void reset();
+    void run();
 };
