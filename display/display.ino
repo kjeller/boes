@@ -46,6 +46,7 @@ int16_t  textX = matrix.width(), // Current text position (X)
 char     str[8];                // Buffer to hold timer text "XXX:YYY\0"
 
 Timer timer;
+long buzzer_timestamp = 0;
 
 int port = 80;
 char ssid[] = "Bamses Øhlhäfvarstoppur";
@@ -58,7 +59,8 @@ String httpRequest;
 Thread timerThread = Thread();
 Thread displayThread = Thread();
 Thread wifiThread = Thread();
-StaticThreadController<3> controller (&timerThread, &displayThread, &wifiThread);
+Thread buzzerThread = Thread();
+StaticThreadController<4> controller (&timerThread, &displayThread, &wifiThread, &buzzerThread);
 
 void setup(void) {
   Serial.begin(115200);
@@ -92,9 +94,12 @@ void setup(void) {
   timerThread.onRun(updateTimer);
   displayThread.onRun(updateDisplay);
   wifiThread.onRun(updateWifi);
+  buzzerThread.onRun(updateBuzzer);
+
   timerThread.setInterval(1); // update every 1ms
   displayThread.setInterval(1); // update every 1ms
   wifiThread.setInterval(100); // update every 100ms
+  buzzerThread.setInterval(100); // update every 100ms
   
   // check for the WiFi module:
   if (WiFi.status() == WL_NO_MODULE) {
@@ -226,6 +231,33 @@ void updateWifi() {
   }
 }
 
+void updateBuzzer() {
+  unsigned long buzzer_time_diff = (time_us_64() - timer.timeout_timestamp) / _1_S_IN_US;
+
+  // TODO Create constant for buzzer sound
+  if (buzzer_time_diff >= 3) {
+    noTone(buzzer);
+
+    // Handles a faulty case where the time_diff is larger than 3 but state is still timeout_1
+    return; 
+  }
+
+  // Handle buzzer timeout case(s)
+  switch (timer.state) {
+    case Timeout_1:
+      tone(buzzer, 1000);
+      break;
+    
+    case Timeout_2:
+      tone(buzzer, 1000);
+      break;
+
+    default:
+      noTone(buzzer);
+  }
+
+}
+
 // Update timer timestamps and input handling
 void updateTimer() {
   uint16_t sensPotValue = analogRead(sensPot);
@@ -244,13 +276,8 @@ void updateTimer() {
   }
 
   switch (timer.state) {
-    // Handle buzzer timeout case
-    case Timeout:
-      if (timer.state == Timeout) {
-        tone(buzzer, 1000);
-      }
-      break;
-
+    case Timeout_1:
+    case Timeout_2:
     case Pause:
       // Timer should not be started/stopped from VibSensors. Buttons shall be used here instead.
       break;
@@ -261,9 +288,6 @@ void updateTimer() {
       } else if (participantVibSensorValue >= sensPotValue) {
         timer.stop();
       }
-
-      // Disable buzzer for all other states
-      noTone(buzzer);
       break;
   }
 }
@@ -277,7 +301,7 @@ void updateDisplay() {
   matrix.setCursor(textX, textY);
 
   // Timer text default white (init and reset).
-  uint16_t textColor = WHITE;
+  uint16_t textColor;
 
   switch (timer.state) {
     case Run:
@@ -288,8 +312,13 @@ void updateDisplay() {
       textColor = RED;
       break;
 
-    case Timeout:
+    case Timeout_1:
+    case Timeout_2:
       textColor = YELLOW;
+      break;
+
+    default:
+      textColor = WHITE;
       break;
   }
 
