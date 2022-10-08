@@ -228,12 +228,14 @@ void updateWifi() {
 // Update timer timestamps and input handling
 void updateTimer() {
   uint16_t sensPotValue = analogRead(sensPot);
-  uint16_t judgeVibSensor = analogRead(judgeVibSensor);
+  uint16_t judgeVibSensorValue = analogRead(judgeVibSensor);
   uint16_t participantVibSensorValue = analogRead(participantVibSensor);
 
+  Serial.print("sensor: ");
+  Serial.println(judgeVibSensorValue);
   timer.run();
    
-  if (digitalRead(startBtnPin) == LOW || (judgeVibSensor >= sensPotValue)) { // Timer can be started from button and judge's vibration sensor
+  if (digitalRead(startBtnPin) == LOW || (judgeVibSensorValue >= sensPotValue)) { // Timer can be started from button and judge's vibration sensor
     timer.start();
   } else if ((digitalRead(stopBtnPin) == LOW)  || (participantVibSensorValue >= sensPotValue)) { // Timer can be stopped from button and participants's vibration sensor
     timer.stop();
