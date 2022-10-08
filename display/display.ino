@@ -267,9 +267,6 @@ void updateTimer() {
   uint16_t judgeVibSensorValue = analogRead(judgeVibSensor);
   uint16_t participantVibSensorValue = analogRead(participantVibSensor);
 
-  Serial.printf("sensPotValue: %d , jdugeSensVal: %d, partcSensVal: %d \n", sensPotValue, judgeVibSensorValue, participantVibSensorValue);
-  Serial.println();
-
   timer.run();
   
   // Handle button input handling for timer. (It should always be allowed to control from buttons)
