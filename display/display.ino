@@ -14,6 +14,7 @@
 #define GREEN    0x07E0
 #define YELLOW   0xFF00
 #define WHITE    0xFFFF
+#define BLUE     0x00FF
 
 // Display controller pins
 uint8_t rgbPins[]  = {2, 3, 4, 5, 8, 9};
@@ -321,8 +322,11 @@ void updateDisplay() {
       break;
 
     case Timeout_1:
-    case Timeout_2:
       textColor = YELLOW;
+      break;
+    
+    case Timeout_2:
+      textColor = BLUE;
       break;
 
     default:
