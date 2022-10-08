@@ -27,8 +27,25 @@ TODO add pinout
 
 The folloing tools and libraries are required to compile and flash the pico.
 - Arduino CLI tool (or Arduino IDE, whatever works)
-- Raspberry Pi Pico Arduino core
+- [Raspberry Pi Pico Arduino core](https://github.com/earlephilhower/arduino-pico)
 - Adafruit and Arduino libraries (see below)
+
+## Linux guide
+
+Install Pico Arduino core (if not already prepared):
+```
+# Initialize arduino-cli
+arduino-cli config init
+
+# Add pico url to additional_urls like this:
+additional_urls: [https://github.com/earlephilhower/arduino-pico/releases/download/global/package_rp2040_index.json]
+
+# Update index to download rp2040 config
+arduino-cli core update-index
+
+# Download Pico cores
+arduino-cli core install rp2040:rp204
+```
 
 Install the required libraries:
 ```
@@ -49,6 +66,6 @@ After the prerequisites are satisfied you should be able to compile and upload t
 ```
 # Compile and upload binary.
 # (Note: For me <serial> was set to /dev/ttyACM0)
-arduino-cli compile -p <serial> -b rp2040:rp2040:rpipicow display/display.ino
+arduino-cli compile -u -p <serial> -b rp2040:rp2040:rpipicow display/display.ino
 ```
 
