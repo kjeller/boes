@@ -260,9 +260,15 @@ void updateBuzzer() {
 
 // Update timer timestamps and input handling
 void updateTimer() {
-  uint16_t sensPotValue = analogRead(sensPot);
+  // Scale sens pot value
+  // TODO Add two of these, one for judge and one for participant 
+  // make them changeable from the web server
+  uint16_t sensPotValue = (1024 * 0.01) + (0.33 * analogRead(sensPot));
   uint16_t judgeVibSensorValue = analogRead(judgeVibSensor);
   uint16_t participantVibSensorValue = analogRead(participantVibSensor);
+
+  Serial.printf("sensPotValue: %d , jdugeSensVal: %d, partcSensVal: %d \n", sensPotValue, judgeVibSensorValue, participantVibSensorValue);
+  Serial.println();
 
   timer.run();
   
