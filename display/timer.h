@@ -11,6 +11,7 @@ typedef enum
     Run,
     Reset,
     Init,
+    Timeout,
 } State;
 
 class Timer {

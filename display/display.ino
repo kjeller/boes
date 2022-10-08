@@ -12,9 +12,8 @@
 #define BLACK    0x0000
 #define RED      0xF800
 #define GREEN    0x07E0
+#define YELLOW   0xFF00
 #define WHITE    0xFFFF
-
-const uint16_t logoStartupTime = 5000; // Variable decides how long the logo is shown at startup
 
 // Display controller pins
 uint8_t rgbPins[]  = {2, 3, 4, 5, 8, 9};
@@ -30,6 +29,7 @@ uint8_t resetBtnPin = 17;           // Button that triggers a timer.reset() call
 uint8_t sensPot = 26;               // Potentimeter that controls the sensitivity of the vibration sensor
 uint8_t judgeVibSensor = 27;        // Vibration sensor that triggers a timer.stop() call if triggered
 uint8_t participantVibSensor = 28;  // Vibration sensor that triggers a timer.start() call if triggered
+uint8_t buzzer = 6;
 
 Adafruit_Protomatter matrix(
   64,          // Matrix width in pixels
@@ -63,32 +63,6 @@ StaticThreadController<3> controller (&timerThread, &displayThread, &wifiThread)
 void setup(void) {
   Serial.begin(115200);
 
-  // check for the WiFi module:
-  if (WiFi.status() == WL_NO_MODULE) {
-    Serial.println("Communication with WiFi module failed!");
-    while (true); // Don't continue
-  }
-
-  String fv = WiFi.firmwareVersion();
-
-  if (fv < WIFI_FIRMWARE_LATEST_VERSION) {
-    Serial.println("Please upgrade the firmware");
-  }
-
-  status = WiFi.beginAP(ssid, pass);
-
-  if (status != WL_CONNECTED) {
-    Serial.println("Creating access point failed");
-    
-    while (true); // Don't continue
-  }
-
-  delay(10000);
-
-  server.begin();
-
-  printWiFiStatus();
-
   // Initialize matrix...
   ProtomatterStatus status = matrix.begin();
   Serial.print("Protomatter begin() status: ");
@@ -113,6 +87,7 @@ void setup(void) {
   pinMode(startBtnPin, INPUT_PULLUP);
   pinMode(stopBtnPin, INPUT_PULLUP);
   pinMode(resetBtnPin, INPUT_PULLUP);
+  pinMode(buzzer, OUTPUT);
 
   timerThread.onRun(updateTimer);
   displayThread.onRun(updateDisplay);
@@ -120,12 +95,38 @@ void setup(void) {
   timerThread.setInterval(1); // update every 1ms
   displayThread.setInterval(1); // update every 1ms
   wifiThread.setInterval(100); // update every 100ms
+  
+  // check for the WiFi module:
+  if (WiFi.status() == WL_NO_MODULE) {
+    Serial.println("Communication with WiFi module failed!");
+    while (true); // Don't continue
+  }
+
+  String fv = WiFi.firmwareVersion();
+
+  if (fv < WIFI_FIRMWARE_LATEST_VERSION) {
+    Serial.println("Please upgrade the firmware");
+  }
+
+  uint8_t wifiStatus = WiFi.beginAP(ssid, pass);
+
+  if (wifiStatus != WL_CONNECTED) {
+    Serial.println("Creating access point failed");
+    
+    while (true); // Don't continue
+  }
 
   // Startup screen
   matrix.fillScreen(BLACK);
   matrix.drawRGBBitmap(0, 0, logo, 64, 32);
   matrix.show();
-  sleep_ms(logoStartupTime);
+
+  // Wait for wifi module to load
+  delay(5000); // TODO add constant for this
+
+  server.begin();
+
+  printWiFiStatus();
 }
 
 void printWiFiStatus() {
@@ -231,16 +232,39 @@ void updateTimer() {
   uint16_t judgeVibSensorValue = analogRead(judgeVibSensor);
   uint16_t participantVibSensorValue = analogRead(participantVibSensor);
 
-  Serial.print("sensor: ");
-  Serial.println(judgeVibSensorValue);
   timer.run();
-   
-  if (digitalRead(startBtnPin) == LOW || (judgeVibSensorValue >= sensPotValue)) { // Timer can be started from button and judge's vibration sensor
+  
+  // Handle button input handling for timer. (It should always be allowed to control from buttons)
+  if (digitalRead(startBtnPin) == LOW) {
     timer.start();
-  } else if ((digitalRead(stopBtnPin) == LOW)  || (participantVibSensorValue >= sensPotValue)) { // Timer can be stopped from button and participants's vibration sensor
+  } else if ((digitalRead(stopBtnPin) == LOW)) {
     timer.stop();
   } else if (digitalRead(resetBtnPin) == LOW) {
     timer.reset();
+  }
+
+  switch (timer.state) {
+    // Handle buzzer timeout case
+    case Timeout:
+      if (timer.state == Timeout) {
+        tone(buzzer, 1000);
+      }
+      break;
+
+    case Pause:
+      // Timer should not be started/stopped from VibSensors. Buttons shall be used here instead.
+      break;
+
+    default:
+      if (judgeVibSensorValue >= sensPotValue) {
+        timer.start();
+      } else if (participantVibSensorValue >= sensPotValue) {
+        timer.stop();
+      }
+
+      // Disable buzzer for all other states
+      noTone(buzzer);
+      break;
   }
 }
 
@@ -262,6 +286,10 @@ void updateDisplay() {
 
     case Pause:
       textColor = RED;
+      break;
+
+    case Timeout:
+      textColor = YELLOW;
       break;
   }
 

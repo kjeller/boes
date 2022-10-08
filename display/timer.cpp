@@ -51,6 +51,13 @@ void Timer::run() {
       break;
 
     case Pause:
+      // TODO Create constant for timeout state
+      if ((time_us_64() - this->pause_timestamp) / _1_S_IN_US >= 30) {
+        this->state = Timeout;
+      }
+      break;
+
+    case Timeout:
       // Nothing to do in this state
       break;
 
