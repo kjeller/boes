@@ -47,6 +47,7 @@ char     str[8];                // Buffer to hold timer text "XXX:YYY\0"
 
 Timer timer;
 long buzzer_timestamp = 0;
+int start_grace_period_us = 1500000; // 1.5 sec start grace period
 
 int port = 80;
 char ssid[] = "Bamses Øhlhäfvarstoppur";
@@ -152,7 +153,6 @@ void printWiFiStatus() {
 
 void loop(void) {
   controller.run();
-  //updateWifi();
 }
 
 void updateWifi() {
@@ -286,7 +286,12 @@ void updateTimer() {
       if (judgeVibSensorValue >= sensPotValue) {
         timer.start();
       } else if (participantVibSensorValue >= sensPotValue) {
-        timer.stop();
+        // Participant only allowed to stop after 1.5 seconds after judge has started
+        if (time_us_64() - timer.start_timestamp >= start_grace_period_us) {
+          timer.stop();
+        } else {
+          Serial.println("Participant not allowed to stop yet");
+        }
       }
       break;
   }
