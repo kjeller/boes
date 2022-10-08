@@ -69,3 +69,9 @@ After the prerequisites are satisfied you should be able to compile and upload t
 arduino-cli compile -u -p <serial> -b rp2040:rp2040:rpipicow display/display.ino
 ```
 
+# Future improvements
+
+- Separate code into thread classes (e.g. display and web server handling in their own respective class)
+- Config file handling for constants/delays/logo (USB mass storage) when plugging the cable (also allow uploading configs on web server site?)
+- HTML/CSS file handling (USB mass storage).. not the crude http response way that is currently implemented
+- CAD PCB to easier replicate/build this project
